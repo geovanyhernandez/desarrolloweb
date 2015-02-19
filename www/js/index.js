@@ -1,99 +1,76 @@
-/* CREACION DE LAS VARIABLES GLOBALES*/
-var myScroll, heightCapa, estadoZoom, widthScreen, x, y;
+var myScroll, wrapper, scroller, ul, capacargando, elemento, node, anchoscroller;
 
+var supportsOrientationChange = "onorientationchange" in window,
+    orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
 
-/*ARRAY DONDE GUARDAMOS TODAS LAS FOTOS QUE QUEREMOS MOSTRAR QUE ESTAN ALOJADAS EN LA CARPETA IMG DEL PROYECTO*/
-var fotos = new Array();
-fotos[0] = "animal1.jpg";
-fotos[1] = "animal2.jpg";
-fotos[2] = "animal3.jpg";
-fotos[3] = "animal4.jpg";
-fotos[4] = "animal5.jpg";
-fotos[5] = "animal6.jpg";
-fotos[6] = "animal1.jpg";
-fotos[7] = "animal2.jpg";
-fotos[8] = "animal3.jpg";
-fotos[9] = "animal4.jpg";
-fotos[10] = "animal5.jpg";
-fotos[11] = "animal6.jpg";
-fotos[12] = "animal1.jpg";
-fotos[13] = "animal2.jpg";
-fotos[14] = "animal3.jpg";
-fotos[15] = "animal4.jpg";
-fotos[16] = "animal5.jpg";
-fotos[17] = "animal6.jpg";
-fotos[18] = "animal1.jpg";
-fotos[19] = "animal2.jpg";
-fotos[20] = "animal3.jpg";
-fotos[21] = "animal4.jpg";
-fotos[22] = "animal5.jpg";
-fotos[23] = "animal6.jpg";
-fotos[24] = "animal1.jpg";
-fotos[25] = "animal2.jpg";
-fotos[26] = "animal3.jpg";
-fotos[27] = "animal4.jpg";
-fotos[28] = "animal5.jpg";
-fotos[29] = "animal6.jpg";
+window.addEventListener(orientationEvent, function() {
 
-var app = {
-    initialize: function() {
-        this.bindEvents();
-    },
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
+	capacargando.style.display='block';
+	wrapper.style.display='none';
 
-    },
-    onDeviceReady: function() {
-    	/*Creamos iscroll en la capa wrapper*/
-    	myScroll = new iScroll('wrapper');
-    	/*Guardamos en un variable todas la capas que debemos insertar dentro del scroll segun las imagenes que tenemos en el array*/
-    	var contenidoGaleria="";
-    	for(y=0; y<fotos.length; y++){
-       		contenidoGaleria+='<div class="contenedorBoton"><div class="contenedorBlanco"><div onclick="abrir('+y+')" class="icono" style="background-image: url(img/'+fotos[y]+')" ></div></div></div>';
-    	}
-    	/*Rellenamos la capa contenedora de la galeria con las imagenes que tenemos en la variable*/
-    	x$('#scroller').html(contenidoGaleria);
-    	calcular();
-    }
-};
+	setTimeout(function() {
+		if(window.orientation == -90 || window.orientation == 90){
+			orientacion(window.innerHeight,window.innerWidth);
+		}else{
+			orientacion(window.innerWidth,window.innerHeight);
+		}
+	}, 300);
 
-/*CON ESTA FUNCION SABREMOS SI CAMBIAMOS DE ORIENTACION EL MOVIL Y PODREMOS RECARCULAR EL ALTO DE LAS MINIATURAS*/
-x$(window).orientationchange(function(e) {
-	x$('#cargando').css({ visibility: 'visible'});
-	//Comprobamos si el zoom esta activado, y si lo esta lo ocultamos mientras aparece el gif cargando
-	if(estadoZoom==1) x$('.md-modal').css({ visibility: 'hidden' });
-	//Ocultamos la capa contenedora de las miniaturas
-	x$('#wrapper').css({ visibility: 'hidden' });
-	//Esperamos unos 300 ms para que al dispositivo le de tiempo girar la pantalla, y ejecutamos la funcion calcular
-	setTimeout(calcular,300);
-});
+}, false);
 
-function calcular(){
-	//Obtenemos el ancho del dispositivo
-	widthScreen = innerWidth;
-	x$('#zoom').css({ width: widthScreen+'px' });
+window.onload = function() {
 
-	/*Calculamos el ancho que deben tener cada foto en miniatura segun el ancho de la pantalla para poder asignarle el mismo alto*/
-	if(widthScreen>='960') heightCapa = (widthScreen / 10)-10;
-	if(widthScreen>='768' && widthScreen<='959') heightCapa = (widthScreen / 8)-10;
-	if(widthScreen<='767') heightCapa = (widthScreen / 4)-10;
-	if(widthScreen>='480' && widthScreen<='767') heightCapa = (widthScreen / 6)-10;
-	x$('.contenedorBoton .contenedorBlanco .icono').css({ height: heightCapa+'px' });
+	if(window.orientation == -90 || window.orientation == 90){
+		orientacion(window.innerHeight,window.innerWidth);
+	}else{
+		orientacion(window.innerWidth,window.innerHeight);
+	}
+
+}
+
+function loaded() {
+
+	myScroll = new iScroll('wrapper', {
+		snap: true,
+		momentum: false,
+		hScrollbar: false,
+		onScrollEnd: function () {
+		}
+ 	});
+
+}
+
+function orientacion(anchoPantalla,altoPantalla){
+
+	ul=document.getElementById('thelist');
+	scroller=document.getElementById('scroller');
+	wrapper=document.getElementById('wrapper');
+
+	//le restamos al alto de la pantalla tanto el alto del pie como de la cabecera
+	anchoPantalla=window.innerWidth;
+	altoPantalla=window.innerHeight/*-45-48*/;
+
+	node = ul.children;// elementos li de la lista.
+
+	anchoscroller=anchoPantalla*node.length;//el ancho del será el ancho de la pantalla tantas veces como fotos haya en la lista.
+	scroller.style.width=anchoscroller+'px';
+
+	for (i = 0; i < node.length; i++) {//Recorremos los elementos de la lista
+		var li = node[i];
+		li.style.width=anchoPantalla+'px';
+		li.style.height=altoPantalla+'px';
+		li.style.lineHeight=altoPantalla+'px';
+	}
+
+	//refrescamos el iscroll
+	wrapper.style.display='block';
+	capacargando=document.getElementById('contenedorcargando');
+	capacargando.style.display='none';
+	elemento = node[myScroll.currPageX];
 
 	myScroll.refresh();
-	x$('#cargando').css({ visibility: 'hidden'});
-	if(estadoZoom==1) x$('.md-modal').css({ visibility: 'visible' });
-	x$('#wrapper').css({ visibility: 'visible' });
+	myScroll.scrollToElement(elemento, 0);
 
 }
 
-function abrir(foto){
-	estadoZoom=1;
-	x$('#zoom').css({ background: 'url(img/'+fotos[foto]+') no-repeat center' });
-	x$('.md-modal').css({ visibility: 'visible' });
-}
-
-function cerrar(){
-	estadoZoom=0;
-	x$('.md-modal').css({ visibility: 'hidden' });
-}
+document.addEventListener('DOMContentLoaded', loaded, false);
